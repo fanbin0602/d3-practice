@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>D3 Chapter 06.03 绘制 SVG</title>
+    <script src="d3/d3.min.js"></script>
+</head>
+<body>
+<script type="application/javascript">
+    const dataset = [5, 10, 15, 20, 25];
+    const w = 500; h = 50;
+    let svg = d3.select('body')
+        .append('svg')
+        .attr('width', w)
+        .attr('height', h);
+    let circles = svg
+        .selectAll('circle')
+        .data(dataset)
+        .enter()
+        .append('circle');
+    circles
+        .attr('cx', (d, i) => (i * 50) + 25)
+        .attr('cy', h / 2)
+        .attr('r', d => d)
+        .attr('fill', 'yellow')
+        .attr('stroke', 'orange')
+        .attr('stroke-width', d => d / 2);
+
+
+</script>
+</body>
+</html>

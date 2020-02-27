@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>D3 Chapter 05</title>
+    <script src="d3/d3.min.js"></script>
+</head>
+<body>
+<script type="application/javascript">
+    const dataset = [5, 10, 15, 20, 25];
+    d3.select("body")
+        // selectAll() 会返回所有相应元素的空引用（还不存在）
+        // 这个空元素代表马上就会创建的元素
+        .selectAll("p")
+        // data() 能遍历传递给它的任何长度的数据集
+        // 然后一次执行连缀在后面的每一个方法，
+        // 同时更新每个方法执行时的上下文，
+        // 以确保 d 永远引用循环当中当前的数据值
+        .data(dataset)
+        // 要创建新的绑定数据的元素，必须使用 enter()。
+        // 这个方法会分析当前选择的 DOM 元素和传给它的数据，
+        // 如果数据值比对应的 DOM 元素多，就创建一个新的占位元素
+        // 然后把这个新占位元素的引用交给链接中的下一个方法
+        .enter()
+        // 取得由 enter() 创建的空占位元素，
+        // 并把一个 p 元素追加到相应的 DOM 中
+        .append("p")
+        .text(d => d)
+        .style("color", d => d > 15 ? "red" : "black")
+</script>
+</body>
+</html>

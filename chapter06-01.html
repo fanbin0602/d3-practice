@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>D3 Chapter 06.01 绘制 DIV</title>
+    <script src="d3/d3.min.js"></script>
+    <style>
+        div.bar {
+            display: inline-block;
+            width: 20px;
+            height: 75px;
+            background-color: teal;
+        }
+    </style>
+</head>
+<body>
+<script type="application/javascript">
+    const dataset = [];
+    for (let i = 0; i < 25; i++) {
+        dataset.push(Math.floor(Math.random() * 30));
+    }
+    d3.select("body").selectAll("div")
+        .data(dataset)
+        .enter()
+        .append("div")
+        .attr("class", "bar")
+        .style("height", d => d * 5 + 'px');
+
+
+</script>
+</body>
+</html>
