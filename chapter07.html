@@ -34,12 +34,18 @@
         .attr('width', w)
         .attr('height', h);
 
+    // 横向比例尺
     let xScale = d3.scaleLinear()
         .domain([0, d3.max(dataset, d => d[0])])
+        // 右侧多留一倍边距防止文字超出画布
         .range([padding, w - padding * 2]);
+
+    // 纵向比例尺
     let yScale = d3.scaleLinear()
         .domain([0, d3.max(dataset, d => d[1])])
         .range([h - padding, padding]);
+
+    // 圆点半径比例尺，作用是将圆点的半径控制在合适的范围内
     let rScale = d3.scaleLinear()
         .domain([0, d3.max(dataset, d => d[1])])
         .range([2, 5]);
@@ -48,10 +54,12 @@
         .data(dataset)
         .enter()
         .append('circle');
+
     circles
         .attr('cx', d => xScale(d[0]))
         .attr('cy', d => yScale(d[1]))
         .attr('r', d => rScale(d[1]));
+
     let texts = svg.selectAll('text')
         .data(dataset)
         .enter()
