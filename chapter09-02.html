@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>D3 Chapter 09 更新、过度和动画 点状图</title>
+    <script src="d3/d3.min.js"></script>
+    <style>
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: black;
+            /* 使用 shape-rendering 的作用使为了保证数轴可刻度线精确到像素级 */
+            shape-rendering: crispEdges;
+        }
+        .axis text {
+            font-family: sans-serif;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+<p>Click on this te to update the chart with new data values (once).</p>
+<script type="application/javascript">
+    let dataset = [];
+
+    // 生成随机的数据
+    const numDataPoints = 50;
+    const xRange = Math.random() * 1000;
+    const yRange = Math.random() * 1000;
+    for (let i = 0; i < numDataPoints; i++) {
+        let newNumber1 = Math.floor(Math.random() * xRange);
+        let newNumber2 = Math.floor(Math.random() * yRange);
+        dataset.push([newNumber1, newNumber2]);
+    }
+
+    const w = 500, h = 300, padding = 30;
+
+    let svg = d3.select('body')
+        .append('svg')
+        .attr('width', w)
+        .attr('height', h);
+
+    // 横向比例尺
+    let xScale = d3.scaleLinear()
+        .domain([0, d3.max(dataset, d => d[0])])
+        .range([padding, w - padding * 2]);
+
+    // 纵向比例尺
+    let yScale = d3.scaleLinear()
+        .domain([0, d3.max(dataset, d => d[1])])
+        .range([h - padding, padding]);
+
+    // 圆点半径比例尺
+    let rScale = d3.scaleLinear()
+        .domain([0, d3.max(dataset, d => d[1])])
+        .range([2, 5]);
+
+    // 创建剪切路径，让图标中的圆点形状不超出坐标系的范围
+    svg.append('clipPath')
+        .attr('id', 'chart-area')
+        .append('rect')
+        .attr('x', padding)
+        .attr('y', padding)
+        .attr('width', w - padding * 2)
+        .attr('height', h - padding * 2);
+    // 将圆点都放在 g 元素中，并应用剪切路径
+    let circles = svg.append('g')
+        .attr('id', 'circles')
+        .attr('clip-path', 'url(#chart-area)')
+        .selectAll('circle')
+        .data(dataset)
+        .enter()
+        .append('circle');
+
+    circles
+        .attr('cx', d => xScale(d[0]))
+        .attr('cy', d => yScale(d[1]))
+        .attr('r', d => rScale(d[1]));
+
+    /*
+    let texts = svg.selectAll('text')
+        .data(dataset)
+        .enter()
+        .append('text')
+        .text(d => d[0] + ',' + d[1])
+        .attr('x', d => xScale(d[0]))
+        .attr('y', d => yScale(d[1]))
+        .attr('font-family', "sans-serif")
+        .attr('font-size', '11px')
+        .attr('fill', 'red');
+
+     */
+
+    // 横坐标
+    // 使用数轴时，应该把对应的比例尺告诉它
+    let xAxis = d3.axisBottom(xScale)
+        // 粗略地设置刻度线的数量为5
+        // 但实际的图中为 7
+        // 这是因为 D3 自作主张，防止刻度线把输入值域切分成不够恰当的值
+        .ticks(5);
+    // 把数轴绘制到一个 g 分组元素中，有两大用途：
+    // 1. 用来包含其它元素，使 svg 结构更简洁整齐
+    // 2. 可以对分组应用**变换**，从而影响到该组中所有元素的视觉表现
+    svg.append('g')
+        .attr('class', 'axis x')
+        // 将坐标轴（向下）移动到图标下方（初始在顶部）
+        .attr('transform', 'translate(0,' + (h - padding) + ')')
+        .call(xAxis);
+
+    // 纵坐标
+    let yAxis = d3.axisLeft(yScale)
+        .ticks(5);
+    svg.append('g')
+        .attr('class', 'axis y')
+        .attr('transform', 'translate(' + padding + ', 0)')
+        .call(yAxis);
+
+    d3.selectAll('p')
+        .on('click', () => {
+            dataset = [];
+
+            const numDataPoints = 50;
+            const xRange = Math.random() * 1000;
+            const yRange = Math.random() * 1000;
+
+            for (let i = 0; i < numDataPoints; i++) {
+                let newNumber1 = Math.floor(Math.random() * xRange);
+                let newNumber2 = Math.floor(Math.random() * yRange);
+                dataset.push([newNumber1, newNumber2]);
+            }
+
+            xScale.domain([0, d3.max(dataset, d => d[0])]);
+            yScale.domain([0, d3.max(dataset, d => d[1])]);
+            rScale.domain([0, d3.max(dataset, d => d[1])]);
+
+            circles.data(dataset)
+                .transition()
+                .duration(1000)
+                .ease(d3.easeLinear)
+                .on('start', function() {
+                    d3.select(this)
+                        .attr('fill', 'magenta')
+                })
+                .attr('cx', d => xScale(d[0]))
+                .attr('cy', d => yScale(d[1]))
+                .attr('r', d => rScale(d[1]))
+                .transition()
+                .duration(1000)
+                .attr('fill', 'black')
+                .attr('r', d => rScale(d[1]));
+
+            // 更新数轴
+            svg.select('.x.axis')
+                .transition()
+                .duration(1000)
+                .call(xAxis);
+            svg.select('.y.axis')
+                .transition()
+                .duration(1000)
+                .call(yAxis);
+        });
+
+</script>
+</body>
+</html>

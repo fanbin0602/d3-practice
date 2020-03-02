@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>D3 Chapter 06.04 使用 SVG 绘制柱状图</title>
+    <title>D3 Chapter 09 更新、过度和动画 柱状图</title>
     <script src="d3/d3.min.js"></script>
 </head>
 <body>
+<p>Click on this te to update the chart with new data values (once).</p>
 <script type="application/javascript">
-    const dataset = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
+    let dataset = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
         11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
     const w = 600; h = 250, barPadding = 1;
     let svg = d3.select('body')
@@ -53,6 +54,41 @@
         .attr('font-size', '11px')
         .attr('fill', 'white')
         .attr('text-anchor', 'middle')
+
+    d3.select('p')
+        .on('click', () => {
+
+            // 生成新的数据集
+            let maxValue = 100;
+            let numValues = dataset.length;
+            dataset = [];
+            for (let i = 0; i < numValues; i++) {
+                let newNumber = Math.floor(Math.random() * maxValue);
+                dataset.push(newNumber);
+            }
+
+            // 更新比例尺
+            yScale.domain([0, d3.max(dataset)]);
+
+            svg.selectAll('rect')
+                .data(dataset)
+                .transition() // 过渡动画
+                .delay((d, i) => i / dataset.length * 1000) // 延迟时间
+                .duration(1000) // 动画持续时间
+                .ease(d3.easeLinear) // 缓动函数
+                .attr('y', d => h - yScale(d))
+                .attr('height', d => yScale(d))
+                .attr('fill', d => 'rgb(0, 0, ' + (d * 10) + ')');
+            svg.selectAll('text')
+                .data(dataset)
+                .text(d => d)
+                .transition()
+                .delay((d, i) => i / dataset.length * 1000)
+                .duration(1000)
+                .ease(d3.easeLinear)
+                .attr('x', (d, i) => xScale(i) + xScale.bandwidth() / 2)
+                .attr('y', d => h - yScale(d) + 14);
+        })
 
 
 </script>
