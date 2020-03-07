@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>D3 Chapter 10 交互式图表</title>
+    <script src="d3/d3.min.js"></script>
+    <style>
+        rect {
+            transition: fill .3s;
+        }
+        rect:hover {
+            fill: orange;
+        }
+        text {
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+<p id="add">Add a new data value.</p>
+<p id="remove">Remove a data value.</p>
+<p id="sort">Sort</p>
+<script type="application/javascript">
+
+    let dataset = [];
+    let maxValue = 25;
+    let lastKeyValue = 0;
+    for (let i = 0; i < 20; i++) {
+        let newNumber = Math.floor(Math.random() * maxValue);
+        dataset.push({
+            key: lastKeyValue++,
+            value: newNumber
+        });
+    }
+    const w = 600, h = 250, barPadding = 1;
+    let svg = d3.select('body')
+        .append('svg')
+        .attr('width', w)
+        .attr('height', h);
+
+    // 分档比例尺
+    let xScale = d3.scaleBand()
+        // 值域，[0, 1, 2, ...]
+        .domain(d3.range(dataset.length))
+        .range([0, w])
+        .round(true)
+        .paddingInner(0.1);
+
+    // 纵向比例尺
+    let yScale = d3.scaleLinear()
+        .domain([0, d3.max(dataset, d => d.value)])
+        .range([0, h]);
+
+    let sortBar = function() {
+        svg.selectAll('rect')
+            .sort((a, b) => d3.ascending(a, b))
+            .transition()
+            .duration(1000)
+            .attr('x', (d, i) => xScale(i));
+    };
+
+    let rects = svg.selectAll('rect')
+        .data(dataset, d => d.key)
+        .enter()
+        .append('rect');
+
+    rects
+        .attr('x', (d, i) => xScale(i))
+        .attr('y', d => h - yScale(d.value))
+        .attr('width', xScale.bandwidth())
+        .attr('height', d => yScale(d.value))
+        .attr('fill', d => 'rgb(0, 0, ' + (d.value * 10) + ')')
+        .on('click', () => {
+            sortBar();
+        });
+
+    let texts = svg.selectAll('text')
+        .data(dataset, d => d.key)
+        .enter()
+        .append('text')
+        .text(d => d.value)
+        .attr('x', (d, i) => xScale(i) + xScale.bandwidth() / 2)
+        .attr('y', d => h - yScale(d.value) + 14)
+        .attr('font-family', 'sans-serif')
+        .attr('font-size', '11px')
+        .attr('fill', 'white')
+        .attr('text-anchor', 'middle');
+
+    d3.select('#add')
+        .on('click', () => {
+
+            // 新数据
+            dataset.push({
+                key: lastKeyValue++,
+                value: Math.floor(Math.random() * maxValue)
+            });
+
+            // 更新比例尺
+            yScale.domain([0, d3.max(dataset, d => d.value)]);
+            xScale.domain(d3.range(dataset.length));
+
+            rects = svg.selectAll('rect').data(dataset, d => d.key);
+            let enterRects = rects.enter()
+                .append('rect')
+                .attr('x', w)
+                .attr('y', d => h - yScale(d.value))
+                .attr('width', xScale.bandwidth())
+                .attr('height', d => yScale(d.value))
+                .attr('fill', d => 'rgb(0, 0, ' + (d.value * 10) + ')');
+
+            rects
+                // merge 方法用来合并原来的元素和新加入的元素
+                // 参考：https://bl.ocks.org/cccruzr/c6bdcb0f6788a6d86e71bb7f49522fb8
+                .merge(enterRects)
+                .transition()
+                //.delay((d, i) => i / dataset.length * 1000)
+                //.duration(1000)
+                //.ease(d3.easeLinear)
+                .attr('x', (d, i) => xScale(i))
+                .attr('y', d => h - yScale(d.value))
+                .attr('width', xScale.bandwidth())
+                .attr('height', d => yScale(d.value))
+                .attr('fill', d => 'rgb(0, 0, ' + (d.value * 10) + ')');
+
+            texts = svg.selectAll('text').data(dataset, d => d.key);
+            let enterTexts = texts.enter()
+                .append('text')
+                .text(d => d.value)
+                .attr('x', (d, i) => w + xScale.bandwidth() / 2)
+                .attr('y', d => h - yScale(d.value) + 14)
+                .attr('font-family', 'sans-serif')
+                .attr('font-size', '11px')
+                .attr('fill', 'white')
+                .attr('text-anchor', 'middle');
+
+            texts
+                .merge(enterTexts)
+                .transition()
+                //.delay((d, i) => i / dataset.length * 1000)
+                //.duration(1000)
+                //.ease(d3.easeLinear)
+                .attr('x', (d, i) => xScale(i) + xScale.bandwidth() / 2)
+                .attr('y', d => h - yScale(d.value) + 14);
+        });
+
+    d3.select('#add')
+        .on('click', () => {
+
+            // 新数据
+            dataset.push({
+                key: lastKeyValue++,
+                value: Math.floor(Math.random() * maxValue)
+            });
+
+            // 更新比例尺
+            yScale.domain([0, d3.max(dataset, d => d.value)]);
+            xScale.domain(d3.range(dataset.length));
+
+            rects = svg.selectAll('rect').data(dataset, d => d.key);
+            let enterRects = rects.enter()
+                .append('rect')
+                .attr('x', w)
+                .attr('y', d => h - yScale(d.value))
+                .attr('width', xScale.bandwidth())
+                .attr('height', d => yScale(d.value))
+                .attr('fill', d => 'rgb(0, 0, ' + (d.value * 10) + ')');
+
+            rects
+                // merge 方法用来合并原来的元素和新加入的元素
+                // 参考：https://bl.ocks.org/cccruzr/c6bdcb0f6788a6d86e71bb7f49522fb8
+                .merge(enterRects)
+                .transition()
+                //.delay((d, i) => i / dataset.length * 1000)
+                //.duration(1000)
+                //.ease(d3.easeLinear)
+                .attr('x', (d, i) => xScale(i))
+                .attr('y', d => h - yScale(d.value))
+                .attr('width', xScale.bandwidth())
+                .attr('height', d => yScale(d.value))
+                .attr('fill', d => 'rgb(0, 0, ' + (d.value * 10) + ')');
+
+            texts = svg.selectAll('text').data(dataset, d => d.key);
+            let enterTexts = texts.enter()
+                .append('text')
+                .text(d => d.value)
+                .attr('x', (d, i) => w + xScale.bandwidth() / 2)
+                .attr('y', d => h - yScale(d.value) + 14)
+                .attr('font-family', 'sans-serif')
+                .attr('font-size', '11px')
+                .attr('fill', 'white')
+                .attr('text-anchor', 'middle');
+
+            texts
+                .merge(enterTexts)
+                .transition()
+                //.delay((d, i) => i / dataset.length * 1000)
+                //.duration(1000)
+                //.ease(d3.easeLinear)
+                .attr('x', (d, i) => xScale(i) + xScale.bandwidth() / 2)
+                .attr('y', d => h - yScale(d.value) + 14);
+        });
+
+    d3.select('#remove')
+        .on('click', () => {
+
+            // 新数据
+            dataset.shift();
+
+            // 更新比例尺
+            yScale.domain([0, d3.max(dataset, d => d.value)]);
+            xScale.domain(d3.range(dataset.length));
+
+            rects = svg.selectAll('rect').data(dataset, d => d.key);
+            let exitRects = rects.exit()
+                .transition()
+                .attr('x', -xScale.bandwidth())
+                .remove();
+
+            rects
+                .transition()
+                //.delay((d, i) => i / dataset.length * 1000)
+                //.duration(1000)
+                //.ease(d3.easeLinear)
+                .attr('x', (d, i) => xScale(i))
+                .attr('y', d => h - yScale(d.value))
+                .attr('width', xScale.bandwidth())
+                .attr('height', d => yScale(d.value))
+                .attr('fill', d => 'rgb(0, 0, ' + (d.value * 10) + ')');
+
+            texts = svg.selectAll('text').data(dataset, d => d.key);
+            let exitTexts = texts.exit()
+                .transition()
+                .attr('x', -xScale.bandwidth() / 2)
+                .remove();
+
+            texts
+                .transition()
+                //.delay((d, i) => i / dataset.length * 1000)
+                //.duration(1000)
+                //.ease(d3.easeLinear)
+                .attr('x', (d, i) => xScale(i) + xScale.bandwidth() / 2)
+                .attr('y', d => h - yScale(d.value) + 14);
+        });
+
+
+
+    d3.select('#sort')
+        .on('click', () => {
+            svg.selectAll('rect')
+                .sort((a, b) => d3.ascending(a, b))
+                .transition()
+                .duration(1000)
+                .attr('x', (d, i) => xScale(i));
+        });
+
+</script>
+</body>
+</html>
